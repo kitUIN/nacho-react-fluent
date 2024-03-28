@@ -8,7 +8,12 @@ import {
   Link,
   mergeClasses,
 } from "@fluentui/react-components";
-import { PersonRegular, KeyRegular } from "@fluentui/react-icons";
+import {
+  PersonRegular,
+  KeyRegular,
+  CommentRegular,
+  PersonAddRegular,
+} from "@fluentui/react-icons";
 import { Card, CardFooter } from "@fluentui/react-components";
 
 import { themeAtom } from "@/atoms/local";
@@ -38,21 +43,9 @@ const useStyles = makeStyles({
     "--fui-Card--size": "0px",
     ...shorthands.padding("36px"),
     ...shorthands.borderRadius("10px"),
-    width: "320px",
+    width: "360px",
     maxWidth: "100%",
     boxShadow: "0 0 4px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.14)",
-  },
-  footer: {
-    justifyContent: "center",
-    display: "flex",
-    alignItems: "center",
-  },
-  loginButton: {
-    marginTop: "15px",
-    width: "100%",
-  },
-  registerButton: {
-    width: "100%", 
   },
   wrapper: {
     width: "100%",
@@ -81,55 +74,138 @@ const useStyles = makeStyles({
   },
 });
 
+function SendSMS(){
+
+}
+
 function Login() {
+  // true是验证码,false是密码登录
+  const [isMessage, setIsMessage] = React.useState(false);
+  const [icon, setIcon] = React.useState(<CommentRegular />);
+  const [otherText, setOtherText] = React.useState("验证码登录");
   const [isVisible, setIsVisible] = React.useState(false);
+  const [time, setTime] = React.useState(60);
+  const [messageTimeout, setMessageTimeout] = React.useState("发送验证码");
+  const [isMessageButton, setIsMessageButton] = React.useState(false);
   const motion = useMotion(isVisible, { animateOnFirstMount: false });
 
-  React.useEffect(() => {
-    setIsVisible(true);
-  }, []);
   const setTheme = useSetAtom(themeAtom);
   const styles = useStyles();
   const userId = useId("content-user");
   const pwdId = useId("content-pwd");
-  return (<>
-    {motion.canRender && (
-      <div ref={motion.ref}  className={mergeClasses(styles.cardDiv, motion.active && styles.visible)}>
-        <Card className={styles.card}>
-          <div className={styles.headers}>
-            <img className={styles.avatar} src="avatar.svg" alt="avatar" />
-            <h2>大猫猫控制台</h2>
-          </div>
-          <div className={styles.root}>
-            <Input contentBefore={<PersonRegular />} id={userId} />
-            <Input contentBefore={<KeyRegular />} type="password" id={pwdId} />
-          </div>
+  const yzmId = useId("content-yzm");
 
-          <CardFooter className={styles.footer}>
-            <div className={styles.divFooter}>
-              <div className={styles.wrapper}>
-                <Checkbox label="记住我"></Checkbox>
-                <Link>忘记密码</Link>
-              </div>
-              <Button
-                onClick={() => {
-                  setTheme("DefaultDark");
-                }}
-                className={styles.loginButton}
-                appearance="primary"
-              >
-                登录
-              </Button>
-              <div style={{ display: "flex", gap:"10px", marginTop: "15px" }}>
-                <Button className={styles.registerButton}>验证码登录</Button>
-                <Button className={styles.registerButton}>注册</Button>
-              </div>
+  React.useEffect(() => {
+    setIsVisible(true);
+  }, []);
+  return (
+    <>
+      {motion.canRender && (
+        <div
+          ref={motion.ref}
+          className={mergeClasses(
+            styles.cardDiv,
+            motion.active && styles.visible
+          )}
+        >
+          <Card className={styles.card}>
+            <div className={styles.headers}>
+              <img className={styles.avatar} src="avatar.svg" alt="avatar" />
+              <h2>大猫猫控制台</h2>
             </div>
-          </CardFooter>
-        </Card>
-      </div>
+            <div className={styles.root}>
+              <Input
+                placeholder="QQ"
+                contentBefore={<PersonRegular />}
+                id={userId}
+              />
+              {isMessage ? (
+                <div style={{ width: "100%", display: "flex", gap: "10px" }}>
+                  <Input
+                    style={{ width: "150px" }}
+                    placeholder="验证码"
+                    contentBefore={<CommentRegular />}
+                    id={yzmId}
+                  />
+                  <Button disabled={isMessageButton}
+                    onClick={() => {
+                      SendSMS();
+                      setIsMessageButton(true);
+                      setMessageTimeout(time + "秒后重新发送");
+                      const timerId = setInterval(() => {
+                        setTime((time) => {
+                          if (time === 0) {
+                            setIsMessageButton(false);
+                            setMessageTimeout("发送验证码"); 
+                            clearInterval(timerId);
+                            return 60;
+                          }
+                          setMessageTimeout(time - 1 + "秒后重新发送");
+                          return time - 1;
+                        });
+                      }, 1000);
+                    }}
+                    style={{ width: "100%" }}
+                  >
+                    {messageTimeout}
+                  </Button>
+                </div>
+              ) : (
+                <Input
+                  placeholder="密码"
+                  contentBefore={<KeyRegular />}
+                  type="password"
+                  id={pwdId}
+                />
+              )}
+            </div>
+
+            <CardFooter className="nacho-card-footer">
+              <div className={styles.divFooter}>
+                {isMessage ? (
+                  <></>
+                ) : (
+                  <div className={styles.wrapper}>
+                    <Checkbox label="记住我"></Checkbox>
+                    <Link>忘记密码</Link>
+                  </div>
+                )}
+                <Button
+                  onClick={() => {
+                    setTheme("DefaultDark");
+                  }}
+                  style={{ marginTop: "15px" }}
+                  appearance="primary"
+                >
+                  登录
+                </Button>
+                <div
+                  style={{ display: "flex", gap: "10px", marginTop: "15px" }}
+                >
+                  <Button
+                    icon={icon}
+                    onClick={() => {
+                      setIsMessage(!isMessage);
+                      setIcon(!isMessage ? <KeyRegular /> : <CommentRegular />);
+                      setOtherText(!isMessage ? "密码登录" : "验证码登录");
+                    }}
+                    className="nacho-login-bottom-button"
+                  >
+                    {otherText}
+                  </Button>
+                  <Button
+                    icon={<PersonAddRegular />}
+                    className="nacho-login-bottom-button"
+                  >
+                    注册
+                  </Button>
+                </div>
+              </div>
+            </CardFooter>
+          </Card>
+        </div>
       )}
-      </>
+    </>
   );
 }
 

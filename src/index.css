@@ -18,6 +18,7 @@ html, body, #root {
 	margin: 0;
   height: 100%;
 	width: 100%;
+  -webkit-tap-highlight-color: rgba(0,0,0,0)
 }
 
  
@@ -42,4 +43,15 @@ html, body, #root {
   flex-direction: column;
   justify-content: space-between;
   height:100%;
+}
+
+// Login.tsx
+.nacho-card-footer{
+  justify-content: "center";
+  display: "flex";
+  align-items: "center";
+}
+
+.nacho-login-bottom-button{
+  width:100%;
 }
