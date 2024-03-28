@@ -1,39 +1,37 @@
-import { About } from "@/pages/About";
-import Home from "@/pages/Home";
-import { Route, Routes } from "react-router-dom";
-import { Login } from "@/pages/Login";
 import {
+  NavigateFunction,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+import { NavigationItem, pages as clientPages } from "./pages";
+import {
+  Divider,
   FluentProvider,
   Tab,
   TabList,
   makeStyles,
-  webDarkTheme,
-  webLightTheme,
 } from "@fluentui/react-components";
 import { useAtomValue } from "jotai";
-import { themeAtom } from "@/atoms/local";
+import { getTheme, themeAtom } from "@/atoms/local";
 import {
   CalendarMonthRegular,
   CalendarMonthFilled,
   bundleIcon,
+  type FluentIcon,
 } from "@fluentui/react-icons";
-const CalendarMonth = bundleIcon(CalendarMonthFilled, CalendarMonthRegular);
+import { LazyImportComponent } from "./components/LazyImportComponent";
+import { createElement } from "react";
+import { Tabs } from "./components/Tabs";
 const useStyles = makeStyles({
   provider: {
     width: "100%",
     height: "100%",
   },
 });
-function getTheme(themeName: string) {
-  switch (themeName) {
-    case "DefaultDark":
-      return webDarkTheme;
-    case "DefaultLight":
-      return webLightTheme;
-    default:
-      return webLightTheme;
-  }
-}
+
+
 function App() {
   const styles = useStyles();
   const theme = useAtomValue(themeAtom);
@@ -41,20 +39,17 @@ function App() {
     <div className="App">
       <FluentProvider className={styles.provider} theme={getTheme(theme)}>
         <div className="Nav">
-          <TabList defaultSelectedValue="tab2" size="large" vertical>
-            <Tab value="tab1">First Tab</Tab>
-            <Tab icon={<CalendarMonth />} value="tab2">
-              Second Tab
-            </Tab>
-            <Tab value="tab3">Third Tab</Tab>
-            <Tab value="tab4">Fourth Tab</Tab>
-          </TabList>
-
+          <Tabs></Tabs>
+          {/* <Divider vertical style={{ height: "100%" }} /> */}
           <div className="Routes">
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="about" element={<About />} />
-              <Route path="login" element={<Login />} />
+              {clientPages.map(({ path, element }, index) => (
+                <Route
+                  key={`${path}-${index}`}
+                  path={path}
+                  element={<LazyImportComponent lazyChildren={element} />}
+                />
+              ))}
             </Routes>
           </div>
         </div>
